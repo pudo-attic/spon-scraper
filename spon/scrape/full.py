@@ -22,4 +22,4 @@ def article_gen(num):
 
 if __name__ == "__main__":
     max_id = max([url_to_number(u) for u in get_latest()])
-    threaded(article_gen(max_id), resolve_forward, num_threads=1)
+    threaded(article_gen(max_id), resolve_forward, num_threads=40)
