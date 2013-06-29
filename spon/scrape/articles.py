@@ -31,16 +31,22 @@ def save_keywords(number, value):
             keywords.insert(data)
 
 
+def url_to_number(article_url):
+    if '/video/' in article_url:
+        return 0
+    m = EXTRACT_NUMBER.search(article_url)
+    if m is None:
+        return log.error("Cannot get article ID from: %s", article_url)
+    return int(m.groups()[0])
+
+
 def scrape_article(article_url, number=None, force=True):
     if not force and articles.find_one(article_url=article_url):
         return
     #engine.begin()
 
     if number is None:
-        m = EXTRACT_NUMBER.search(article_url)
-        if m is None:
-            return log.error("Cannot get article ID from: %s", article_url)
-        number = int(m.groups()[0])
+        number = url_to_number(article_url)
 
     if 'spiegel.de/spam' in article_url:
         return log.info("Won't scrape SPAM.")

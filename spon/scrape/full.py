@@ -1,7 +1,8 @@
 import requests
 from urlparse import urljoin
 from thready import threaded
-from spon.scrape.articles import scrape_article
+from spon.scrape.articles import scrape_article, url_to_number
+from spon.scrape.latest import get_latest
 
 
 def resolve_forward(num):
@@ -20,4 +21,5 @@ def article_gen(num):
 
 
 if __name__ == "__main__":
-    threaded(article_gen(900000), resolve_forward, num_threads=1)
+    max_id = max([url_to_number(u) for u in get_latest()])
+    threaded(article_gen(max_id), resolve_forward, num_threads=1)
