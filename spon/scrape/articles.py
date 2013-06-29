@@ -4,11 +4,13 @@ import requests
 import re
 from pprint import pprint
 from spon.common import engine, articles, keywords
+from spon.common import article_links, topic_links, external_links
 from spon.scrape.cache import cached_get
 from spon.scrape.clean import clean_article
 
 log = logging.getLogger(__name__)
 EXTRACT_NUMBER = re.compile('-(\d+).html$')
+SITE_URL = 'http://www.spiegel.de/'
 SKIP_METAS = ['mssmarttagspreventparsing', 'email', 'author',
               'twitter_card', 'twitter_site', 'og_site_name',
               'og_type']
@@ -36,12 +38,40 @@ def save_keywords(number, value):
             keywords.insert(data)
 
 
+def save_links(number, doc):
+    article_links.delete(number=number)
+    topic_links.delete(number=number)
+    external_links.delete(number=number)
+
+    for link in doc.findall('.//a'):
+        href = link.get('href')
+        data = {
+            'number': number,
+            'text': link.text,
+            'href': href,
+            'title': link.get('title'),
+        }
+        if href is None or 'http://forum.spiegel.de' in href:
+            continue
+        if 'text-link-ext' in link.get('class', '') and SITE_URL not in href:
+            external_links.insert(data)
+        elif 'text-link-int' in link.get('class', '') or SITE_URL in href:
+            if '/thema/' in href:
+                thema_name = href.rsplit('/', 1)[-1]
+                data['topic'] = thema_name
+                topic_links.insert(data)
+            else:
+                data['href_number'] = url_to_number(href)
+                article_links.insert(data)
+
+
 def url_to_number(article_url):
     if '/video/' in article_url:
         return 0
     m = EXTRACT_NUMBER.search(article_url)
     if m is None:
-        return log.error("Cannot get article ID from: %s", article_url)
+        #return log.error("Cannot get article ID from: %s", article_url)
+        return
     return int(m.groups()[0])
 
 
@@ -85,6 +115,7 @@ def scrape_article(article_url, number=None, force=True):
         else:
             data[name] = value
 
+    save_links(number, doc)
     data = clean_article(data)
     articles.upsert(data, ['number'])
     #pprint(data)
