@@ -24,7 +24,8 @@ setup(
     install_requires=[
         'dataset>=0.3.6',
         'requests>=1.2',
-        "lxml"
+        "lxml",
+        "python-dateutil"
     ],
     tests_require=[],
     entry_points={

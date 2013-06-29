@@ -5,6 +5,7 @@ import re
 from pprint import pprint
 from spon.common import engine, articles, keywords
 from spon.scrape.cache import cached_get
+from spon.scrape.clean import clean_article
 
 log = logging.getLogger(__name__)
 EXTRACT_NUMBER = re.compile('-(\d+).html$')
@@ -27,7 +28,7 @@ def save_keywords(number, value):
     for k in value.split(','):
         k = k.strip()
         if len(k):
-            data = {'keyword': k, 'article_number': number}
+            data = {'keyword': k, 'number': number}
             keywords.insert(data)
 
 
@@ -71,7 +72,7 @@ def scrape_article(article_url, number=None, force=True):
 
     for meta in doc.findall('.//head/meta'):
         name = meta.get('name', meta.get('property', '')).lower().strip()
-        name = name.replace(':', '_')
+        name = name.replace(':', '_').replace('-', '_')
         value = meta.get('content', meta.get('value', '')).strip()
         if not len(name) or name in SKIP_METAS or not len(value):
             continue
@@ -80,6 +81,7 @@ def scrape_article(article_url, number=None, force=True):
         else:
             data[name] = value
 
+    data = clean_article(data)
     articles.upsert(data, ['number'])
     #pprint(data)
     #engine.commit()
