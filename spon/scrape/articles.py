@@ -19,8 +19,12 @@ def path_text(doc, selector):
     if not len(els):
         log.warn("Couldn't find: %s in %s", selector, doc.url)
         return
-    text = els.pop().xpath('string()')
-    return text.strip()
+    text = els.pop()
+    for tag in ['iframe', 'script', 'div']:
+        for el in text.findall('.//' + tag):
+            #print "DELETING", el, [el.xpath('string()').strip()]
+            el.getparent().remove(el)
+    return text.xpath('string()').strip()
 
 
 def save_keywords(number, value):
