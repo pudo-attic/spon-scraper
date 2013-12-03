@@ -115,6 +115,13 @@ def scrape_article(article_url, number=None, force=True):
         else:
             data[name] = value
 
+    # get image URL
+    image = doc.find('.//img[@class="spPanoImageTeaserPic"]')
+    if image is not None:
+        url = image.get('src')
+        data['pano_url'] = url
+        data['pano_id'] = url.split('image-', 1)[-1].split('-')[0]
+
     save_links(number, doc)
     data = clean_article(data)
     articles.upsert(data, ['number'])

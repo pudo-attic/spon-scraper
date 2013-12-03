@@ -11,6 +11,7 @@ def resolve_forward(num):
     if redir_response.status_code >= 400:
         return
     article_url = urljoin(redir_url, redir_response.headers.get('location'))
+    print [article_url]
     scrape_article(article_url, number=num, force=False)
 
 

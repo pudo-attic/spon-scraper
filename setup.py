@@ -24,6 +24,8 @@ setup(
     install_requires=[
         'dataset>=0.3.6',
         'requests>=1.2',
+        'thready',
+        'cssselect',
         "lxml",
         "python-dateutil"
     ],
